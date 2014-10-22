@@ -79,9 +79,32 @@
     TodoCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
 
     Todo *todo = self.todoList[indexPath.row];
-    cell.titleLabel.text = todo.title;
+    
+    if (todo.isCompleted) {
+        NSAttributedString * title =
+        [[NSAttributedString alloc] initWithString:todo.title
+                                        attributes:@{NSStrikethroughStyleAttributeName:@(NSUnderlineStyleSingle)}];
+        [cell.titleLabel setAttributedText:title];
+    }
+    else {
+        cell.titleLabel.text = todo.title;
+    }
+    
     cell.descriptionLabel.text = todo.todoDescription;
     cell.priorityLabel.text = [NSString stringWithFormat:@"%d", (int)todo.priorityNumber];
+    
+    if (todo.priorityNumber < 3) {
+        
+        cell.priorityLabel.textColor = [UIColor greenColor];
+    } else if (todo.priorityNumber == 3) {
+        
+        cell.priorityLabel.textColor = [UIColor orangeColor];
+    } else {
+        
+        cell.priorityLabel.textColor = [UIColor redColor];
+    }
+    
+    
     return cell;
 }
 
