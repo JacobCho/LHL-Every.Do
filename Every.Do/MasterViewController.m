@@ -11,7 +11,7 @@
 #import "AddTodoViewController.h"
 #import "TodoCell.h"
 
-@interface MasterViewController () <AddTodoViewControllerDelegate>
+@interface MasterViewController () <AddTodoViewControllerDelegate, DetailViewControllerDelegate, TodoCellDelegate>
 
 @property (nonatomic, strong) NSMutableArray *todoList;
 @end
@@ -33,13 +33,6 @@
 #pragma mark - Bar Button Items
 
 - (IBAction)addTodo:(UIBarButtonItem *)sender {
-    if (!self.todoList) {
-        self.todoList = [[NSMutableArray alloc] init];
-    }
-    
-    
-//    NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-//    [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
     
     
 }
@@ -52,7 +45,14 @@
     if ([[segue identifier] isEqualToString:@"showDetail"]) {
         NSIndexPath *indexPath = [self.tableView indexPathForSelectedRow];
         Todo *todo = self.todoList[indexPath.row];
-        [[segue destinationViewController] setDetailItem:todo];
+        
+        DetailViewController *dVC = segue.destinationViewController;
+        dVC.selectedIndexPath = indexPath;
+        
+        [dVC setDetailItem:todo];
+        dVC.delegate = self;
+        
+        
     }
     else if ([[segue identifier] isEqualToString:@"addTodoSegue"]) {
         
@@ -77,33 +77,11 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     TodoCell *cell = [tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
-
+    cell.delegate = self;
+    
     Todo *todo = self.todoList[indexPath.row];
     
-    if (todo.isCompleted) {
-        NSAttributedString * title =
-        [[NSAttributedString alloc] initWithString:todo.title
-                                        attributes:@{NSStrikethroughStyleAttributeName:@(NSUnderlineStyleSingle)}];
-        [cell.titleLabel setAttributedText:title];
-    }
-    else {
-        cell.titleLabel.text = todo.title;
-    }
-    
-    cell.descriptionLabel.text = todo.todoDescription;
-    cell.priorityLabel.text = [NSString stringWithFormat:@"%d", (int)todo.priorityNumber];
-    
-    if (todo.priorityNumber < 3) {
-        
-        cell.priorityLabel.textColor = [UIColor greenColor];
-    } else if (todo.priorityNumber == 3) {
-        
-        cell.priorityLabel.textColor = [UIColor orangeColor];
-    } else {
-        
-        cell.priorityLabel.textColor = [UIColor redColor];
-    }
-    
+    [self setTableCell:todo withCell:cell];
     
     return cell;
 }
@@ -122,6 +100,44 @@
     }
 }
 
+#pragma mark - Helper Methods
+
+-(NSAttributedString *)addStrikeThrough:(NSString *)string {
+    NSAttributedString * title =
+    [[NSAttributedString alloc] initWithString:string
+                                    attributes:@{NSStrikethroughStyleAttributeName:@(NSUnderlineStyleSingle)}];
+    
+    return title;
+    
+}
+
+-(void)setTableCell:(Todo *)todo withCell:(TodoCell *)cell {
+    if (todo.isCompleted) {
+        [cell.titleLabel setAttributedText:[self addStrikeThrough:todo.title]];
+    }
+    else if (!todo.isCompleted){
+        cell.titleLabel.text = todo.title;
+
+    }
+    
+    cell.descriptionLabel.text = todo.todoDescription;
+    cell.priorityLabel.text = [NSString stringWithFormat:@"Priority %d", (int)todo.priorityNumber];
+    
+    if (todo.priorityNumber < 3) {
+        
+        cell.priorityLabel.textColor = [UIColor greenColor];
+    } else if (todo.priorityNumber == 3) {
+        
+        cell.priorityLabel.textColor = [UIColor orangeColor];
+    } else {
+        
+        cell.priorityLabel.textColor = [UIColor redColor];
+    }
+
+    
+}
+
+
 #pragma mark - Add Todo Delegate Method
 
 -(void)addNewTodo:(AddTodoViewController *)addTodoVC didAddTodo:(Todo *)todo {
@@ -133,11 +149,32 @@
     [self.todoList addObject:todo];
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:([self.todoList count] - 1) inSection:0];
     [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
-    
+}
 
+#pragma mark - Detail View Controller Delegate 
+
+-(void)completeTask:(DetailViewController *)dvc withTodo:(Todo *)todo atIndexPath:(NSIndexPath *)indexPath{
+     TodoCell *cell = [self.tableView dequeueReusableCellWithIdentifier:@"Cell" forIndexPath:indexPath];
+    self.todo = todo;
     
+    [self setTableCell:todo withCell:cell];
+
+    [self.tableView reloadData];
+}
+
+#pragma mark - Detail View Controller Delegate
+
+-(void)setCompleted:(TodoCell *)cell {
     
+    NSIndexPath *indexPath = [self.tableView indexPathForCell:cell];
+    
+    self.todo = self.todoList[indexPath.row];
+    
+    self.todo.isCompleted = YES;
+    
+    [self setTableCell:self.todo withCell:cell];
     
 }
+
 
 @end

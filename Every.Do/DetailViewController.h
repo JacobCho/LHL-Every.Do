@@ -9,11 +9,18 @@
 #import <UIKit/UIKit.h>
 #import "Todo.h"
 
+@class DetailViewController;
+@protocol DetailViewControllerDelegate <NSObject>
+
+-(void)completeTask:(DetailViewController *)dvc withTodo:(Todo *)todo atIndexPath:(NSIndexPath *)indexPath;
+
+@end
+
 @interface DetailViewController : UIViewController
 
 @property (strong, nonatomic) Todo *todo;
-@property (weak, nonatomic) IBOutlet UILabel *detailDescriptionLabel;
-
+@property (weak, nonatomic) id<DetailViewControllerDelegate> delegate;
+@property (weak, nonatomic) NSIndexPath *selectedIndexPath;
 
 - (void)setDetailItem:(Todo *)newTodo;
 

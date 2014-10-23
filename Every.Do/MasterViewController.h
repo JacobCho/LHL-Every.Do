@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "Todo.h"
 
-@interface MasterViewController : UITableViewController
+@interface MasterViewController : UITableViewController <UITableViewDelegate>
 
 @property (nonatomic, strong) Todo *todo;
 
