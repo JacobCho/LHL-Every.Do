@@ -7,6 +7,7 @@
 //
 
 #import "AddTodoViewController.h"
+#import "DefaultTodoViewController.h"
 
 @interface AddTodoViewController ()
 
@@ -24,6 +25,17 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+}
+
+-(void)viewDidAppear:(BOOL)animated {
+    
+    [super viewDidAppear:animated];
+    
+    DefaultTodoViewController *dvc = [[DefaultTodoViewController alloc] init];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    [self setDefaultTodo:dvc withDefaults:defaults];
+    
 }
 
 - (IBAction)cancelButtonPressed:(UIBarButtonItem *)sender {
@@ -51,6 +63,29 @@
         
         [self dismissViewControllerAnimated:YES completion:nil];
         
+    }
+    
+}
+
+-(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    
+    if ([[segue identifier] isEqualToString:@"DefaultTodoSegue"]) {
+         DefaultTodoViewController *dvc = segue.destinationViewController;
+         dvc.delegate = self;
+        
+    }
+    
+}
+
+#pragma mark - Default VC Delegate Method
+
+-(void)setDefaultTodo:(DefaultTodoViewController *)dvc withDefaults:(NSUserDefaults *)defaults {
+    
+    if (defaults != nil) {
+    
+    self.titleTextField.text = [defaults objectForKey:@"Title"];
+    self.descriptionTextField.text = [defaults objectForKey:@"Description"];
+    self.priorityLabel.text = [NSString stringWithFormat:@"%d",(int)[defaults integerForKey:@"Priority Number"]];
     }
     
 }

@@ -8,13 +8,18 @@
 
 #import <Foundation/Foundation.h>
 
-@interface Todo : NSObject
+@interface Todo : NSObject <NSCoding> 
 
 @property (nonatomic, strong) NSString *title;
 @property (nonatomic, strong) NSString *todoDescription;
 @property (nonatomic, assign) NSInteger priorityNumber;
 @property (nonatomic, assign) BOOL isCompleted;
 
+-(instancetype)initWithTitle:(NSString *)title
+             withDescription:(NSString *)description
+          withPriorityNumber:(NSInteger)number
+                andCompleted:(BOOL)completed;
 
+- (id)initWithCoder:(NSCoder *)decoder;
 
 @end

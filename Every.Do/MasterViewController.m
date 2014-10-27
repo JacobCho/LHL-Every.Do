@@ -18,17 +18,34 @@
 
 @implementation MasterViewController
 
-
-
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-
-
-
+    
+    
+    UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 50)];
+    headerView.backgroundColor = [UIColor redColor];
+    UIButton *refreshButton = [[UIButton alloc] initWithFrame:CGRectMake(163, 0, 100, 50)];
+    refreshButton.backgroundColor = [UIColor whiteColor];
+    [refreshButton setTitle:@"Save" forState:UIControlStateNormal];
+    [refreshButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    
+    [refreshButton addTarget:self action:@selector(saveData) forControlEvents:UIControlEventTouchUpInside];
+    
+    [headerView addSubview:refreshButton];
+    
+    self.tableView.tableHeaderView = headerView;
     
 }
+
+-(void)saveData {
+    
+    MasterViewController *appDelegate = (MasterViewController *)[[UIApplication sharedApplication] delegate];
+    
+    [appDelegate saveData];
+
+}
+
 
 #pragma mark - Bar Button Items
 
@@ -37,6 +54,13 @@
     
 }
 - (IBAction)editItem:(UIBarButtonItem *)sender {
+    if (!self.tableView.editing) {
+    
+        [self.tableView setEditing:YES];
+    }
+    else {
+        [self.tableView setEditing:NO];
+    }
 }
 
 #pragma mark - Segues
@@ -111,6 +135,8 @@
     
 }
 
+
+
 -(void)setTableCell:(Todo *)todo withCell:(TodoCell *)cell {
     if (todo.isCompleted) {
         [cell.titleLabel setAttributedText:[self addStrikeThrough:todo.title]];
@@ -162,7 +188,7 @@
     [self.tableView reloadData];
 }
 
-#pragma mark - Detail View Controller Delegate
+#pragma mark - Todo Cell Delegate
 
 -(void)setCompleted:(TodoCell *)cell {
     
@@ -175,6 +201,18 @@
     [self setTableCell:self.todo withCell:cell];
     
 }
+
+#pragma mark - UITableViewDataSource Method
+
+-(void)tableView:(UITableView *)tableView moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath {
+    
+    Todo *todoSource = [self.todoList objectAtIndex:sourceIndexPath.row];
+
+    [self.todoList removeObjectAtIndex:sourceIndexPath.row];
+    [self.todoList insertObject:todoSource atIndex:destinationIndexPath.row];
+
+}
+
 
 
 @end
