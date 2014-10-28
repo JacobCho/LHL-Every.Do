@@ -9,7 +9,11 @@
 #import "AddTodoViewController.h"
 #import "DefaultTodoViewController.h"
 
-@interface AddTodoViewController ()
+@interface AddTodoViewController () {
+    
+    NSString *titleTextChange;
+    
+}
 
 
 @property (weak, nonatomic) IBOutlet UITextField *titleTextField;
@@ -31,11 +35,34 @@
     
     [super viewDidAppear:animated];
     
-    DefaultTodoViewController *dvc = [[DefaultTodoViewController alloc] init];
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+   
+    [self loadData];
     
-    [self setDefaultTodo:dvc withDefaults:defaults];
     
+    [self.titleTextField addTarget:self
+                  action:@selector(textFieldDidChange)
+        forControlEvents:UIControlEventEditingChanged];
+    
+    [self.descriptionTextField addTarget:self
+                            action:@selector(textFieldDidChange)
+                  forControlEvents:UIControlEventEditingChanged];
+    
+    [self.prioritySlider addTarget:self
+                                  action:@selector(textFieldDidChange)
+                        forControlEvents:UIControlEventEditingChanged];
+    
+    
+}
+
+-(void)textFieldDidChange {
+    
+    self.todo.title = self.titleTextField.text;
+    self.todo.todoDescription = self.descriptionTextField.text;
+    self.todo.priorityNumber = self.prioritySlider.value;
+    
+    [self saveData];
+    
+    NSLog(@"Editing");
 }
 
 - (IBAction)cancelButtonPressed:(UIBarButtonItem *)sender {
@@ -88,6 +115,56 @@
     self.priorityLabel.text = [NSString stringWithFormat:@"%d",(int)[defaults integerForKey:@"Priority Number"]];
     }
     
+}
+
+#pragma mark - Data Persistence
+
+-(void)saveData {
+    
+    NSMutableDictionary *dataDict = [[NSMutableDictionary alloc] initWithCapacity:4];
+    
+    if (self.todo != nil) {
+        [dataDict setObject:self.todo forKey:@"todo"];
+    }
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectoryPath = [paths objectAtIndex:0];
+    NSString *filePath = [documentsDirectoryPath stringByAppendingString:@"cache"];
+    
+    [NSKeyedArchiver archiveRootObject:dataDict toFile:filePath];
+    NSLog(@"Saved!");
+    
+}
+
+-(void)loadData {
+    
+    // Look for saved data
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectoryPath = [paths objectAtIndex:0];
+    NSString *filePath = [documentsDirectoryPath stringByAppendingString:@"cache"];
+    
+    if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
+        
+        NSData *data = [NSData dataWithContentsOfFile:filePath];
+        NSDictionary *savedData = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        
+        if ([savedData objectForKey:@"todo"] != nil) {
+            self.todo = [savedData objectForKey:@"todo"];
+            self.titleTextField.text = self.todo.title;
+            self.descriptionTextField.text = self.todo.todoDescription;
+            self.priorityLabel.text = [NSString stringWithFormat:@"%d", (int)self.todo.priorityNumber];
+            NSLog(@"Todo available");
+        }
+        
+    
+        NSLog(@"Loaded!");
+    }
+    else {
+        DefaultTodoViewController *dvc = [[DefaultTodoViewController alloc] init];
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [self setDefaultTodo:dvc withDefaults:defaults];
+    }
 }
 
 

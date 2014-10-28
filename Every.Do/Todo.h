@@ -20,6 +20,5 @@
           withPriorityNumber:(NSInteger)number
                 andCompleted:(BOOL)completed;
 
-- (id)initWithCoder:(NSCoder *)decoder;
 
 @end

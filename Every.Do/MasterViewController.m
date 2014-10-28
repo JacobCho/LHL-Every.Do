@@ -13,7 +13,7 @@
 
 @interface MasterViewController () <AddTodoViewControllerDelegate, DetailViewControllerDelegate, TodoCellDelegate>
 
-@property (nonatomic, strong) NSMutableArray *todoList;
+
 @end
 
 @implementation MasterViewController
@@ -35,16 +35,12 @@
     [headerView addSubview:refreshButton];
     
     self.tableView.tableHeaderView = headerView;
+    [self loadData];
     
 }
 
--(void)saveData {
-    
-    MasterViewController *appDelegate = (MasterViewController *)[[UIApplication sharedApplication] delegate];
-    
-    [appDelegate saveData];
 
-}
+
 
 
 #pragma mark - Bar Button Items
@@ -163,6 +159,44 @@
     
 }
 
+-(void)saveData {
+    
+    NSMutableDictionary *dataDict = [[NSMutableDictionary alloc] initWithCapacity:4];
+    NSArray *listToSave = [[NSArray alloc] initWithArray:self.todoList];
+    
+    if (listToSave != nil) {
+        [dataDict setObject:listToSave forKey:@"todos"];
+    }
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectoryPath = [paths objectAtIndex:0];
+    NSString *filePath = [documentsDirectoryPath stringByAppendingString:@"appData"];
+    
+    [NSKeyedArchiver archiveRootObject:dataDict toFile:filePath];
+    NSLog(@"Saved!");
+    
+}
+
+-(void)loadData {
+    
+    // Look for saved data
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectoryPath = [paths objectAtIndex:0];
+    NSString *filePath = [documentsDirectoryPath stringByAppendingString:@"appData"];
+    
+    if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
+        
+        NSData *data = [NSData dataWithContentsOfFile:filePath];
+        NSDictionary *savedData = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        
+        if ([savedData objectForKey:@"todos"] != nil) {
+            self.todoList = [[NSMutableArray alloc] initWithArray:[savedData objectForKey:@"todos"]];
+        }
+        NSLog(@"Loaded!");
+    }
+}
+
 
 #pragma mark - Add Todo Delegate Method
 
@@ -212,6 +246,8 @@
     [self.todoList insertObject:todoSource atIndex:destinationIndexPath.row];
 
 }
+
+
 
 
 

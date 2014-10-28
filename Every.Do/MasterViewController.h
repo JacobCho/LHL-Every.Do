@@ -12,7 +12,10 @@
 @interface MasterViewController : UITableViewController <UITableViewDataSource, UITableViewDelegate>
 
 @property (nonatomic, strong) Todo *todo;
+@property (nonatomic, strong) NSMutableArray *todoList;
 
+
+-(void)saveData;
 
 @end
 
